@@ -48,19 +48,19 @@ pip install -e .
 
 ```bash
 # システム初期化
-python src/cli.py init
+python cli.py init
 
 # システム状態確認
-python src/cli.py status
+python cli.py status
 
 # AIエージェントとの対話
-python src/cli.py agent ai --query "システムの最適化を実行してください"
+python cli.py agent ai --query "システムの最適化を実行してください"
 
 # 学習機能の開始
-python src/cli.py learn start
+python cli.py learn start
 
 # ヘルプの表示
-python src/cli.py --help
+python cli.py --help
 ```
 
 ## 🏗️ アーキテクチャ
@@ -201,6 +201,8 @@ python src/dashboard/dashboard_server.py
 # ブラウザで http://localhost:8080 にアクセス
 ```
 
+**注意**: 現在のシステムは安定性のためモックモードで動作します。全機能を利用するには環境設定が必要です。
+
 ### 主要メトリクス
 
 - **システムヘルス**: CPU、メモリ、ディスク使用率
@@ -313,22 +315,28 @@ class CustomInfraMonitor:
 
 ### よくある問題
 
-**1. インポートエラー**
+**1. CLI が動作しない**
 ```bash
-# Python パスの設定
-export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
+# プロジェクトルートから実行してください
+python cli.py init
+
+# 仮想環境を使用
+./venv/bin/python cli.py init
 ```
 
-**2. メモリ不足**
+**2. モックモードから実環境への移行**
 ```bash
-# メモリ最適化の実行
-python src/cli.py agent coordination --action optimize-memory
+# 環境設定ファイルを作成
+cp .env.example .env
+
+# 設定を編集してから再実行
+python cli.py init
 ```
 
 **3. パフォーマンス問題**
 ```bash
-# システム診断
-python src/cli.py agent ai --query "パフォーマンス問題を診断してください"
+# システム診断（モックモード）
+python cli.py agent ai --query "パフォーマンス問題を診断してください"
 ```
 
 ### ログの確認

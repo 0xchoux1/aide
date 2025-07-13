@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-aide = "src.cli:main"
+aide = "cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
