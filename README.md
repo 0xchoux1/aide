@@ -63,6 +63,8 @@ python cli.py learn start
 python cli.py --help
 ```
 
+**重要**: `python src/cli.py` ではなく `python cli.py` を使用してください。
+
 ## 🏗️ アーキテクチャ
 
 ### システム構成
@@ -317,8 +319,12 @@ class CustomInfraMonitor:
 
 **1. CLI が動作しない**
 ```bash
-# プロジェクトルートから実行してください
+# 必ずプロジェクトルートから cli.py を実行してください
 python cli.py init
+
+# src/cli.py は使用しないでください（インポートエラーが発生します）
+# ❌ python src/cli.py init  # これは実行しないでください
+# ✅ python cli.py init     # こちらを使用してください
 
 # 仮想環境を使用
 ./venv/bin/python cli.py init

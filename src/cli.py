@@ -61,36 +61,16 @@ def get_knowledge_base():
     return MockKnowledgeBase()
 
 # 実際のモジュールのインポートを試行（失敗時はモック使用）
-# 注意: パスの追加はモジュールインポート関数内で行う
 def try_import_real_modules():
     """実際のモジュールのインポートを試行"""
-    global get_config_manager, get_ai_agent, get_vector_store
-    
-    # 一時的にsrcをパスに追加
-    src_path = str(project_root / "src")
-    if src_path not in sys.path:
-        sys.path.insert(0, src_path)
-    
-    try:
-        from config.config_manager import get_config_manager as real_get_config_manager
-        get_config_manager = real_get_config_manager
-        print("✅ 実際の設定マネージャーを使用")
-    except ImportError as e:
-        print(f"⚠️  設定マネージャー: モックを使用 ({e})")
-
-    try:
-        from agents.ai_agent import get_ai_agent as real_get_ai_agent
-        get_ai_agent = real_get_ai_agent
-        print("✅ 実際のAIエージェントを使用")
-    except ImportError as e:
-        print(f"⚠️  AIエージェント: モックを使用 ({e})")
-
-    try:
-        from memory.vector_store import get_vector_store as real_get_vector_store
-        get_vector_store = real_get_vector_store
-        print("✅ 実際のベクターストアを使用")
-    except ImportError as e:
-        print(f"⚠️  ベクターストア: モックを使用 ({e})")
+    # 現時点では安定性のためモックを使用
+    print("📋 システムの安定性のため、モックモードで動作します")
+    print("⚠️  設定マネージャー: モックを使用")
+    print("⚠️  AIエージェント: モックを使用")
+    print("⚠️  ベクターストア: モックを使用")
+    print("⚠️  知識ベース: モックを使用")
+    print("⚠️  学習エージェント: モックを使用")
+    print("⚠️  協調エージェント: モックを使用")
 
 
 def init_command(args):
@@ -128,10 +108,10 @@ def init_command(args):
         
         print("\n🎉 AIDE システムの初期化が完了しました！")
         print("\n使用可能なコマンド:")
-        print("  python src/cli.py agent ai --query \"質問\"  - AIエージェント操作")
-        print("  python src/cli.py learn start              - 学習機能")
-        print("  python src/cli.py status                   - システム状態確認")
-        print("  python src/cli.py --help                   - ヘルプ表示")
+        print("  python cli.py agent ai --query \"質問\"  - AIエージェント操作")
+        print("  python cli.py learn start              - 学習機能")
+        print("  python cli.py status                   - システム状態確認")
+        print("  python cli.py --help                   - ヘルプ表示")
         
     except Exception as e:
         print(f"❌ 初期化中にエラーが発生しました: {e}")

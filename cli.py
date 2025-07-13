@@ -109,10 +109,10 @@ def init_command(args):
         
         print("\n🎉 AIDE システムの初期化が完了しました！")
         print("\n使用可能なコマンド:")
-        print("  python src/cli.py agent ai --query \"質問\"  - AIエージェント操作")
-        print("  python src/cli.py learn start              - 学習機能")
-        print("  python src/cli.py status                   - システム状態確認")
-        print("  python src/cli.py --help                   - ヘルプ表示")
+        print("  python cli.py agent ai --query \"質問\"  - AIエージェント操作")
+        print("  python cli.py learn start              - 学習機能")
+        print("  python cli.py status                   - システム状態確認")
+        print("  python cli.py --help                   - ヘルプ表示")
         
     except Exception as e:
         print(f"❌ 初期化中にエラーが発生しました: {e}")
