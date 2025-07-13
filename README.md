@@ -106,30 +106,51 @@ aide/
 │   │   └── fallback_system.py   # フォールバック
 │   ├── config/             # 設定管理
 │   ├── logging/            # ログ管理
-│   └── cli.py             # CLIインターフェース
+│   ├── llm/                # LLM統合（Claude Code）
+│   │   ├── claude_code_client.py # Claude Code CLIクライアント
+│   │   └── llm_interface.py      # LLM統一インターフェース
+│   └── cli.py             # CLIインターフェース（旧版・互換性用）
 ├── tests/                  # 包括的テストスイート
 │   ├── unit/              # 単体テスト
 │   ├── integration/       # 統合テスト
 │   └── performance/       # パフォーマンステスト
 ├── docs/                   # 詳細ドキュメント
-└── config/                # 設定ファイル
+├── config/                # 設定ファイル
+├── cli.py                 # メインCLIエントリーポイント
+├── .env.example           # 環境設定テンプレート
+└── PRODUCTION_SETUP.md    # 本番環境セットアップガイド
 ```
 
 ## ⚡ 主要機能
 
-### 1. 🤖 AIエージェントシステム
+### 1. 🤖 Claude Code ベースAIシステム
 
 ```python
-# AIエージェントの使用例
-from src.agents import get_ai_agent, get_coordination_agent
+# Claude Code クライアントの使用例
+from src.llm.claude_code_client import ClaudeCodeClient
 
-# AI推論エージェント
-ai_agent = get_ai_agent()
-result = ai_agent.process_query("システムボトルネックを特定してください")
+# Claude Code クライアント初期化
+claude_client = ClaudeCodeClient(
+    claude_command="claude",
+    timeout=120,
+    max_retries=3
+)
 
-# 協調エージェント（複数エージェント管理）
-coord_agent = get_coordination_agent()
-optimization_result = coord_agent.orchestrate_optimization()
+# AIによるシステム分析
+response = claude_client.generate_response(
+    "システムのボトルネックを特定し、最適化案を提案してください",
+    context="現在のシステムメトリクス: CPU 85%, Memory 70%, Disk I/O 60%"
+)
+
+# 構造化された応答生成
+structured_response = claude_client.generate_structured_response(
+    "インフラの健康状態レポートを作成してください",
+    output_format={
+        "overall_health": "システム全体の健康度（1-5）",
+        "critical_issues": "緊急対応が必要な問題",
+        "recommendations": "改善提案"
+    }
+)
 ```
 
 ### 2. 📊 リアルタイム監視
@@ -203,7 +224,13 @@ python src/dashboard/dashboard_server.py
 # ブラウザで http://localhost:8080 にアクセス
 ```
 
-**注意**: 現在のシステムは安定性のためモックモードで動作します。全機能を利用するには環境設定が必要です。
+**注意**: 現在のシステムは安定性のためモックモードで動作します。
+
+**本番利用への移行**:
+1. **Claude Code CLI確認**: `claude --version` で動作確認
+2. **Claude Code CLI認証**: `claude auth` で認証設定
+3. **環境設定**: `cp .env.example .env` → 基本設定
+4. **詳細手順**: [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) を参照
 
 ### 主要メトリクス
 
@@ -281,16 +308,24 @@ class CustomOptimizationRule(OptimizationRule):
         return system.scale_resources()
 ```
 
-### 3. プラグインシステム
+### 3. Claude Code連携カスタマイズ
 
 ```python
-from src.plugins import register_plugin
+from src.llm.claude_code_client import ClaudeCodeClient
 
-@register_plugin("custom_monitor")
-class CustomInfraMonitor:
-    def collect_infrastructure_metrics(self):
-        # インフラ固有のメトリクス収集
-        pass
+# カスタムClaudeクライアント
+custom_client = ClaudeCodeClient(
+    claude_command="claude",
+    timeout=180,
+    max_retries=5
+)
+
+# インフラ専用プロンプト
+infra_response = custom_client.generate_rag_response(
+    task_description="サーバー監視システムの構築",
+    retrieved_context="既存のメトリクス情報...",
+    task_type="infrastructure"
+)
 ```
 
 ## 📈 パフォーマンス
@@ -330,14 +365,22 @@ python cli.py init
 ./venv/bin/python cli.py init
 ```
 
-**2. モックモードから実環境への移行**
+**2. モックモードから本番環境への移行**
 ```bash
 # 環境設定ファイルを作成
 cp .env.example .env
 
-# 設定を編集してから再実行
-python cli.py init
+# 重要: Claude Code CLI 認証設定が必要です
+# claude auth
+
+# 詳細な本番環境セットアップ手順
+# 📖 PRODUCTION_SETUP.md を参照してください
 ```
+
+**本番環境への移行について**：
+- **必須**: Claude Code CLI認証設定（`claude auth`）
+- **推奨**: PostgreSQL、Redis、SSL証明書の設定  
+- **詳細手順**: [PRODUCTION_SETUP.md](PRODUCTION_SETUP.md) を参照
 
 **3. パフォーマンス問題**
 ```bash
