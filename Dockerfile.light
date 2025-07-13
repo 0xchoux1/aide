@@ -1,0 +1,30 @@
+# 軽量版Dockerfile
+FROM python:3.13-slim
+
+# 必要最小限のパッケージのみインストール
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# 作業ディレクトリの設定
+WORKDIR /app
+
+# 最小限の依存関係をインストール
+RUN pip install --no-cache-dir \
+    pytest>=7.0.0 \
+    pytest-cov>=4.0.0 \
+    pydantic>=2.0.0 \
+    chromadb>=1.0.0 \
+    numpy>=1.22.0
+
+# アプリケーションコードをコピー
+COPY src ./src
+COPY tests ./tests
+COPY pyproject.toml .
+
+# 環境変数の設定
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+
+# デフォルトコマンド
+CMD ["python", "-m", "pytest", "tests/unit/test_rag_system_integration.py", "-v"]

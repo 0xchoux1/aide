@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  rag-system:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      args:
+        - BUILDPLATFORM=linux/amd64
+    container_name: aide-rag-system
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - CHROMA_DB_PATH=/app/test_data
+    volumes:
+      - rag_data:/app/test_data
+    networks:
+      - rag_network
+    restart: unless-stopped
+    
+  rag-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: aide-rag-test
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - CHROMA_DB_PATH=/app/test_data
+    volumes:
+      - rag_test_data:/app/test_data
+    networks:
+      - rag_network
+    command: python -m pytest tests/unit/test_rag_system_integration.py -v --tb=short
+    depends_on:
+      - rag-system
+    
+  rag-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: aide-rag-demo
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - CHROMA_DB_PATH=/app/test_data
+    volumes:
+      - rag_demo_data:/app/test_data
+    networks:
+      - rag_network
+    ports:
+      - "8080:8080"
+    command: >
+      python -c "
+      from src.rag.rag_system import RAGSystem;
+      from src.agents.base_agent import Task;
+      import time;
+      rag = RAGSystem();
+      rag.knowledge_base.add_troubleshooting_knowledge({
+        'problem': 'データベース接続エラー', 
+        'solutions': ['接続文字列確認', '権限確認'], 
+        'category': 'database'
+      });
+      print('RAG Demo Server Started');
+      while True: time.sleep(60)
+      "
+    depends_on:
+      - rag-system
+    
+  rag-interactive:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: aide-rag-interactive
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - CHROMA_DB_PATH=/app/test_data
+    volumes:
+      - rag_interactive_data:/app/test_data
+      - .:/app/host_code
+    networks:
+      - rag_network
+    command: bash
+    stdin_open: true
+    tty: true
+
+volumes:
+  rag_data:
+    driver: local
+  rag_test_data:
+    driver: local
+  rag_demo_data:
+    driver: local
+  rag_interactive_data:
+    driver: local
+
+networks:
+  rag_network:
+    driver: bridge

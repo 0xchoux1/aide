@@ -1,0 +1,50 @@
+# 本番用Dockerfile - 認証問題を回避
+FROM python:3.13-slim
+
+# 非対話モードの設定
+ENV DEBIAN_FRONTEND=noninteractive
+
+# システムパッケージのインストール
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    make \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 作業ディレクトリの設定
+WORKDIR /app
+
+# 最小限の依存関係を直接インストール（認証問題を回避）
+RUN pip install --no-cache-dir --timeout=300 \
+    pytest==8.4.1 \
+    pytest-cov==6.2.1 \
+    anyio==4.9.0 \
+    pydantic==2.11.7 \
+    numpy==2.3.1 \
+    chromadb==1.0.15 \
+    && pip list
+
+# アプリケーションのソースコードをコピー
+COPY src/ ./src/
+COPY tests/ ./tests/
+COPY pyproject.toml ./
+
+# テスト用ディレクトリの作成
+RUN mkdir -p /app/test_data && chmod 777 /app/test_data
+
+# 環境変数の設定
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV CHROMA_DB_PATH=/app/test_data
+
+# ヘルスチェックの追加
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import chromadb; print('ChromaDB OK')" || exit 1
+
+# 実行ユーザーの設定（セキュリティのため）
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# デフォルトコマンド
+CMD ["python", "-m", "pytest", "tests/unit/test_rag_system_integration.py", "-v", "--tb=short"]

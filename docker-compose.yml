@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  rag-test:
+    build: 
+      context: .
+      dockerfile: Dockerfile.light
+    container_name: aide-rag-test
+    environment:
+      - PYTHONPATH=/app
+      - CHROMA_DB_PATH=/app/test_data
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./test_data:/app/test_data
+    command: python -m pytest tests/unit/test_rag_system_integration.py -v --tb=short
+    
+  rag-test-original:
+    build: 
+      context: .
+      dockerfile: Dockerfile.light
+    container_name: aide-rag-test-original
+    environment:
+      - PYTHONPATH=/app
+      - CHROMA_DB_PATH=/app/test_data
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./test_data:/app/test_data
+    command: python -m pytest tests/unit/test_rag_system.py -v --tb=short
+    
+  rag-interactive:
+    build: 
+      context: .
+      dockerfile: Dockerfile.light
+    container_name: aide-rag-interactive
+    environment:
+      - PYTHONPATH=/app
+      - CHROMA_DB_PATH=/app/test_data
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./test_data:/app/test_data
+      - .:/app
+    command: bash
+    stdin_open: true
+    tty: true

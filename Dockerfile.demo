@@ -1,0 +1,17 @@
+# RAGシステムデモ用Dockerfile
+FROM aide-rag-production:latest
+
+# ルートユーザーに切り替え
+USER root
+
+# デモスクリプトをコピー
+COPY demo_rag_system.py /app/
+
+# 実行権限を付与
+RUN chmod +x /app/demo_rag_system.py && chown appuser:appuser /app/demo_rag_system.py
+
+# アプリユーザーに戻る
+USER appuser
+
+# デモを実行
+CMD ["python", "/app/demo_rag_system.py"]
