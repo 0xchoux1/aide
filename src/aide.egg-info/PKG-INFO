@@ -10,3 +10,4 @@ Requires-Dist: chromadb>=0.4.0
 Requires-Dist: crewai>=0.1.0
 Requires-Dist: python-dotenv>=1.0.0
 Requires-Dist: psutil>=5.8.0
+Requires-Dist: anyio>=4.0.0

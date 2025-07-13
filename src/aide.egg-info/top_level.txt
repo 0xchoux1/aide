@@ -9,5 +9,8 @@ logging
 memory
 optimization
 rag
+resilience
+sample_module
 self_improvement
+test_module
 tools

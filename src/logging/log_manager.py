@@ -8,7 +8,11 @@ import os
 import sys
 import json
 import logging
-import logging.handlers
+try:
+    import logging.handlers
+except ImportError:
+    # Python環境によってlogging.handlersが利用できない場合の対応
+    logging.handlers = None
 from typing import Dict, List, Optional, Any, Union, TextIO
 from pathlib import Path
 from datetime import datetime, timedelta

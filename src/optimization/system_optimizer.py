@@ -13,11 +13,24 @@ from datetime import datetime, timedelta
 from enum import Enum
 import json
 
-from ..config import get_config_manager
-from ..logging import get_logger, get_audit_logger
-from .memory_optimizer import MemoryOptimizer, get_memory_optimizer
-from .performance_profiler import PerformanceProfiler, get_performance_profiler
-from .async_optimizer import AsyncOptimizer, get_async_optimizer
+try:
+    from ..config import get_config_manager
+    from ..logging import get_logger, get_audit_logger
+    from .memory_optimizer import MemoryOptimizer, get_memory_optimizer
+    from .performance_profiler import PerformanceProfiler, get_performance_profiler
+    from .async_optimizer import AsyncOptimizer, get_async_optimizer
+except ImportError as e:
+    # 相対インポートエラーの場合の代替処理
+    import sys
+    from pathlib import Path
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+    
+    from config import get_config_manager
+    from logging import get_logger, get_audit_logger
+    from optimization.memory_optimizer import MemoryOptimizer, get_memory_optimizer
+    from optimization.performance_profiler import PerformanceProfiler, get_performance_profiler
+    from optimization.async_optimizer import AsyncOptimizer, get_async_optimizer
 from .benchmark_system import PerformanceBenchmark, get_performance_benchmark
 
 

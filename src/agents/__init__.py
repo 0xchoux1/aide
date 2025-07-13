@@ -1,7 +1,7 @@
 """
-AIDE �����ȷ���
+AIDE エージェント群
 
-AI�ը�����k����9�_��ЛW~Y
+AIエージェントと関連コンポーネント
 """
 
 from .base_agent import AIAgent
