@@ -20,6 +20,9 @@ except ImportError:
     paramiko = None
     SSH_AVAILABLE = False
 
+# 環境変数でモックモードを制御
+FORCE_MOCK_MODE = os.getenv('AIDE_REMOTE_MOCK_MODE', 'false').lower() == 'true'
+
 
 logger = logging.getLogger(__name__)
 
@@ -74,15 +77,19 @@ class SSHClient:
             mock_mode: モックモードで動作するか
         """
         self.config = config
-        self.mock_mode = mock_mode or not SSH_AVAILABLE
+        # 環境変数でモックモードが強制されている場合、または paramikoが利用不可の場合はモックモード
+        self.mock_mode = mock_mode or FORCE_MOCK_MODE or not SSH_AVAILABLE
         self._client = None
         self._status = ConnectionStatus.DISCONNECTED
         self._connected_at = None
         self._last_activity = None
         
-        if not self.mock_mode:
+        if self.mock_mode:
+            logger.info(f"SSHClient initialized in MOCK mode for {config.hostname}")
+        else:
             self._client = paramiko.SSHClient()
             self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            logger.info(f"SSHClient initialized in REAL mode for {config.hostname}")
     
     @property
     def status(self) -> ConnectionStatus:
@@ -150,10 +157,11 @@ class SSHClient:
             raise SSHConnectionError(f"Connection timeout to {self.config.hostname}")
         except paramiko.AuthenticationException as e:
             self._status = ConnectionStatus.ERROR
-            raise SSHConnectionError(f"Authentication failed: {str(e)}")
+            raise SSHConnectionError(f"Authentication failed for {self.config.username}@{self.config.hostname}: {str(e)}")
         except Exception as e:
             self._status = ConnectionStatus.ERROR
-            raise SSHConnectionError(f"Connection failed: {str(e)}")
+            logger.error(f"Unexpected error connecting to {self.config.hostname}: {type(e).__name__}: {str(e)}")
+            raise SSHConnectionError(f"Connection failed to {self.config.hostname}: {type(e).__name__}: {str(e)}")
     
     def disconnect(self):
         """接続を切断"""

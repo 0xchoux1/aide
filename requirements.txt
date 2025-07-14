@@ -8,3 +8,4 @@ crewai>=0.1.0
 python-dotenv>=1.0.0
 numpy>=1.22.0
 sentence-transformers>=3.0.0
+paramiko>=3.0.0

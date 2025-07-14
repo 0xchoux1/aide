@@ -115,6 +115,9 @@ prometheus-client>=0.16.0
 
 # インストール
 pip install -r requirements.txt -r requirements_production.txt
+
+# リモート機能を使用する場合は paramiko がインストールされていることを確認
+pip show paramiko || echo "警告: paramikoがインストールされていません。リモート機能は動作しません。"
 ```
 
 ### 3.2 システムサービス用パッケージ
