@@ -1,0 +1,342 @@
+# ========================================
+# AIDE リモートサーバー設定ファイル
+# ========================================
+# このファイルでリモートサーバーの接続情報を定義します
+# セキュリティのため、実際の認証情報は環境変数や別途管理してください
+
+# サーバーグループ定義
+server_groups:
+  
+  # 本番環境サーバー群
+  production:
+    description: "本番環境のサーバー群"
+    tags: ["production", "critical"]
+    servers:
+      # Webサーバー
+      - name: "prod-web-01"
+        hostname: "web01.production.example.com"
+        port: 22
+        username: "webadmin"
+        # SSH鍵ファイルパス（実際のパスに変更してください）
+        key_filename: "/path/to/ssh/keys/prod-web-key.pem"
+        tags: ["web", "nginx"]
+        group: "frontend"
+        description: "プライマリWebサーバー"
+        
+      - name: "prod-web-02"
+        hostname: "web02.production.example.com"
+        port: 22
+        username: "webadmin"
+        key_filename: "/path/to/ssh/keys/prod-web-key.pem"
+        tags: ["web", "nginx", "backup"]
+        group: "frontend"
+        description: "セカンダリWebサーバー"
+        
+      # アプリケーションサーバー
+      - name: "prod-app-01"
+        hostname: "app01.production.example.com"
+        port: 22
+        username: "appadmin"
+        key_filename: "/path/to/ssh/keys/prod-app-key.pem"
+        tags: ["application", "nodejs"]
+        group: "backend"
+        description: "メインアプリケーションサーバー"
+        
+      # データベースサーバー
+      - name: "prod-db-01"
+        hostname: "db01.production.example.com"
+        port: 22
+        username: "dbadmin"
+        key_filename: "/path/to/ssh/keys/prod-db-key.pem"
+        tags: ["database", "postgresql"]
+        group: "database"
+        description: "プライマリデータベースサーバー"
+        
+  # ステージング環境サーバー群
+  staging:
+    description: "ステージング環境のサーバー群"
+    tags: ["staging", "testing"]
+    servers:
+      - name: "stage-web-01"
+        hostname: "web01.staging.example.com"
+        port: 22
+        username: "webadmin"
+        key_filename: "/path/to/ssh/keys/staging-key.pem"
+        tags: ["web", "nginx"]
+        group: "frontend"
+        description: "ステージング Webサーバー"
+        
+      - name: "stage-app-01"
+        hostname: "app01.staging.example.com"
+        port: 22
+        username: "appadmin"
+        key_filename: "/path/to/ssh/keys/staging-key.pem"
+        tags: ["application", "nodejs"]
+        group: "backend"
+        description: "ステージング アプリケーションサーバー"
+        
+  # 開発環境サーバー群
+  development:
+    description: "開発環境のサーバー群"
+    tags: ["development", "dev"]
+    servers:
+      - name: "dev-all-01"
+        hostname: "dev01.development.example.com"
+        port: 22
+        username: "devadmin"
+        key_filename: "/path/to/ssh/keys/dev-key.pem"
+        tags: ["web", "app", "database"]
+        group: "development"
+        description: "開発環境統合サーバー"
+        
+  # 監視・ツールサーバー群
+  monitoring:
+    description: "監視・ツールサーバー群"
+    tags: ["monitoring", "tools"]
+    servers:
+      - name: "monitor-01"
+        hostname: "monitor01.tools.example.com"
+        port: 22
+        username: "monitor"
+        key_filename: "/path/to/ssh/keys/monitoring-key.pem"
+        tags: ["prometheus", "grafana"]
+        group: "monitoring"
+        description: "メトリクス監視サーバー"
+        
+      - name: "logs-01"
+        hostname: "logs01.tools.example.com"
+        port: 22
+        username: "logadmin"
+        key_filename: "/path/to/ssh/keys/monitoring-key.pem"
+        tags: ["elasticsearch", "kibana"]
+        group: "logging"
+        description: "ログ集約サーバー"
+
+# グローバル設定
+global_settings:
+  # デフォルト接続タイムアウト
+  default_timeout: 30
+  
+  # デフォルトリトライ設定
+  default_retry_attempts: 3
+  default_retry_delay: 2
+  
+  # デフォルトSSHポート
+  default_port: 22
+  
+  # 安全モード設定
+  safe_mode: true
+  
+  # 並行実行設定
+  max_concurrent_connections: 5
+  
+  # SSH設定
+  ssh_options:
+    # ホスト鍵チェックを有効にする（セキュリティ重要）
+    strict_host_key_checking: true
+    # 圧縮を有効にする
+    compression: true
+    # 接続の多重化を有効にする
+    connection_multiplexing: true
+    # Keep-alive設定
+    server_alive_interval: 60
+    server_alive_count_max: 3
+
+# セキュリティ設定
+security:
+  # 許可されたコマンドパターン（安全モード時）
+  allowed_commands:
+    # システム情報取得
+    - "hostname"
+    - "uname -a"
+    - "uptime"
+    - "whoami"
+    - "id"
+    - "pwd"
+    
+    # ファイルシステム操作（読み取り専用）
+    - "ls*"
+    - "cat*"
+    - "head*"
+    - "tail*"
+    - "find*"
+    - "grep*"
+    - "wc*"
+    - "du*"
+    - "df*"
+    
+    # プロセス・リソース監視
+    - "ps*"
+    - "top*"
+    - "htop*"
+    - "free*"
+    - "iostat*"
+    - "netstat*"
+    - "ss*"
+    - "lsof*"
+    
+    # ネットワーク診断
+    - "ping*"
+    - "nslookup*"
+    - "dig*"
+    - "curl*"
+    - "wget*"
+    
+    # ログ確認
+    - "journalctl*"
+    - "dmesg*"
+    
+    # サービス状態確認
+    - "systemctl status*"
+    - "systemctl is-active*"
+    - "systemctl is-enabled*"
+    
+    # 開発ツール
+    - "git status"
+    - "git log*"
+    - "docker ps*"
+    - "docker images*"
+    - "kubectl get*"
+    - "helm list*"
+  
+  # 禁止されたコマンドパターン
+  blocked_commands:
+    # システム変更
+    - "rm*"
+    - "rmdir*"
+    - "mv*"
+    - "cp*"
+    - "chmod*"
+    - "chown*"
+    - "ln*"
+    
+    # パッケージ管理
+    - "apt*"
+    - "yum*"
+    - "dnf*"
+    - "pip*"
+    - "npm*"
+    
+    # サービス制御
+    - "systemctl start*"
+    - "systemctl stop*"
+    - "systemctl restart*"
+    - "systemctl reload*"
+    - "service*"
+    
+    # ネットワーク変更
+    - "iptables*"
+    - "ufw*"
+    - "firewall-cmd*"
+    
+    # システム制御
+    - "shutdown*"
+    - "reboot*"
+    - "halt*"
+    - "poweroff*"
+    
+    # 危険なコマンド
+    - "dd*"
+    - "mkfs*"
+    - "fdisk*"
+    - "parted*"
+    - "mount*"
+    - "umount*"
+    
+    # 権限昇格
+    - "sudo*"
+    - "su*"
+
+# 調査テンプレート
+investigation_templates:
+  # 基本システム調査
+  basic_system_check:
+    description: "基本的なシステム状態確認"
+    commands:
+      - "hostname"
+      - "uname -a"
+      - "uptime"
+      - "free -h"
+      - "df -h"
+      - "ps aux --sort=-%cpu | head -10"
+      - "systemctl --failed"
+    
+  # パフォーマンス調査
+  performance_analysis:
+    description: "システムパフォーマンス分析"
+    commands:
+      - "top -bn1 | head -20"
+      - "iostat -x 1 3"
+      - "free -h"
+      - "vmstat 1 3"
+      - "netstat -i"
+      - "ss -tuln"
+    
+  # セキュリティ監査
+  security_audit:
+    description: "基本的なセキュリティ確認"
+    commands:
+      - "last -n 20"
+      - "netstat -tuln"
+      - "ps aux | grep -E '(ssh|httpd|nginx|apache)'"
+      - "find /etc -name '*.conf' -perm -004 2>/dev/null | head -10"
+      - "iptables -L 2>/dev/null || ufw status 2>/dev/null"
+    
+  # ログ分析
+  log_analysis:
+    description: "システムログの基本分析"
+    commands:
+      - "journalctl -n 50 --no-pager"
+      - "tail -n 50 /var/log/syslog 2>/dev/null"
+      - "tail -n 50 /var/log/messages 2>/dev/null"
+      - "dmesg | tail -20"
+
+# 通知設定
+notifications:
+  # 重要なイベントの通知
+  critical_events:
+    - "connection_failure"
+    - "security_violation"
+    - "command_blocked"
+    - "investigation_failure"
+  
+  # 通知チャンネル
+  channels:
+    slack:
+      enabled: false
+      webhook_url: ""
+    
+    email:
+      enabled: false
+      recipients: []
+    
+    webhook:
+      enabled: false
+      url: ""
+
+# 使用例とコメント
+# ========================================
+# 
+# このファイルを使用して AIDE のリモート機能を設定します：
+# 
+# 1. 実際のサーバー情報に置き換え：
+#    - hostname: 実際のサーバーのIPアドレスまたはFQDN
+#    - username: SSH接続用のユーザー名
+#    - key_filename: SSH秘密鍵ファイルのパス
+# 
+# 2. セキュリティ設定の確認：
+#    - SSH鍵の権限設定 (chmod 600)
+#    - ファイアウォール設定
+#    - 必要最小限の権限での接続
+# 
+# 3. グループとタグの活用：
+#    - 論理的なサーバーグルーピング
+#    - 環境別の操作制御
+#    - タグベースのフィルタリング
+# 
+# 4. 安全な運用：
+#    - safe_mode は本番環境では true に設定
+#    - 定期的なセキュリティ監査
+#    - ログ監視の実装
+# 
+# ========================================

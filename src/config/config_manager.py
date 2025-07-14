@@ -6,7 +6,10 @@ AIDE 設定管理システム
 
 import os
 import json
-import yaml
+try:
+    import yaml
+except ImportError:
+    yaml = None
 from typing import Dict, Any, Optional, List, Union, Type
 from pathlib import Path
 from dataclasses import dataclass
@@ -149,15 +152,21 @@ class ConfigLoader:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 if file_path.suffix.lower() in ['.yml', '.yaml']:
+                    if yaml is None:
+                        raise ConfigError("PyYAML is required for YAML configuration files")
                     return yaml.safe_load(f) or {}
                 elif file_path.suffix.lower() == '.json':
                     return json.load(f)
                 else:
                     raise ConfigError(f"サポートされていない設定ファイル形式: {file_path.suffix}")
         
-        except (yaml.YAMLError, json.JSONDecodeError) as e:
+        except json.JSONDecodeError as e:
             raise ConfigError(f"設定ファイル解析エラー {file_path}: {str(e)}")
+        except ConfigError:
+            raise
         except Exception as e:
+            if yaml and "YAMLError" in str(type(e)):
+                raise ConfigError(f"YAML解析エラー {file_path}: {str(e)}")
             raise ConfigError(f"設定ファイル読み込みエラー {file_path}: {str(e)}")
     
     def load_from_env(self, prefix: str = "AIDE_") -> Dict[str, Any]:
@@ -400,6 +409,8 @@ class ConfigManager:
             
             with open(file_path, 'w', encoding='utf-8') as f:
                 if format == ConfigFormat.YAML:
+                    if yaml is None:
+                        raise ConfigError("PyYAML is required for YAML configuration files")
                     yaml.dump(self._config, f, default_flow_style=False, allow_unicode=True)
                 elif format == ConfigFormat.JSON:
                     json.dump(self._config, f, indent=2, ensure_ascii=False)

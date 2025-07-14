@@ -142,6 +142,63 @@ chmod 755 data logs backups
 chmod 644 .env
 ```
 
+## 🌐 ステップ4.5: リモートサーバー機能の設定 (Phase 3.3新機能)
+
+### 4.5.1 SSH鍵の準備
+
+```bash
+# SSH鍵ディレクトリ作成
+mkdir -p ~/.ssh/aide_keys
+
+# SSH鍵を適切な場所に配置
+cp /path/to/your/ssh/key.pem ~/.ssh/aide_keys/
+chmod 600 ~/.ssh/aide_keys/*.pem
+```
+
+### 4.5.2 サーバー設定ファイルの編集
+
+`config/servers.yaml` を実際の環境に合わせて編集：
+
+```yaml
+# 実際のサーバー情報に置き換え
+server_groups:
+  production:
+    description: "本番環境のサーバー群"
+    servers:
+      - name: "prod-web-01"
+        hostname: "your-web-server.example.com"
+        port: 22
+        username: "your-ssh-user"
+        key_filename: "/home/user/.ssh/aide_keys/prod-key.pem"
+        tags: ["web", "nginx"]
+        group: "frontend"
+```
+
+### 4.5.3 リモート機能の環境変数設定
+
+```bash
+# .env ファイルに追加
+echo "
+# リモートサーバー機能設定
+AIDE_REMOTE_ENABLED=true
+AIDE_REMOTE_MAX_CONNECTIONS=10
+AIDE_REMOTE_CONNECTION_TIMEOUT=30
+AIDE_REMOTE_SAFE_MODE=true
+AIDE_REMOTE_SERVERS_CONFIG_PATH=config/servers.yaml
+" >> .env
+```
+
+### 4.5.4 SSH接続テスト
+
+```bash
+# 手動でSSH接続確認
+ssh -i ~/.ssh/aide_keys/prod-key.pem username@hostname "uptime"
+
+# AIDE経由でのテスト（モックモード）
+aide remote list
+aide remote status server-name
+```
+
 ## 🚀 ステップ5: 本番モード起動設定
 
 ### 5.1 設定マネージャーの修正
@@ -437,12 +494,49 @@ sudo mkswap /swapfile
 sudo swapon /swapfile
 ```
 
+**4. リモートサーバー接続エラー（Phase 3.3新機能）**
+```bash
+# SSH鍵の権限確認
+ls -la ~/.ssh/aide_keys/
+chmod 600 ~/.ssh/aide_keys/*.pem
+
+# 手動SSH接続テスト
+ssh -i ~/.ssh/aide_keys/key.pem username@hostname "uptime"
+
+# servers.yaml設定確認
+cat config/servers.yaml
+
+# リモート機能のテスト
+aide remote list
+aide remote status server-name
+
+# デバッグモード実行
+AIDE_DEBUG=true aide remote investigate server-name --type basic
+```
+
+**5. パフォーマンス問題**
+```bash
+# 接続プール状態確認
+aide remote config show
+
+# 並行接続数調整
+# .env ファイルで AIDE_REMOTE_MAX_CONNECTIONS を調整
+
+# タイムアウト設定調整
+# .env ファイルで AIDE_REMOTE_CONNECTION_TIMEOUT を調整
+```
+
 ## 📝 本番環境チェックリスト
 
 - [ ] Claude Code CLI インストール・認証完了
 - [ ] `.env` ファイル作成・設定完了
 - [ ] Claude Code CLI 動作テスト完了
 - [ ] データベース設定・接続確認
+- [ ] **リモートサーバー機能設定（Phase 3.3新機能）**
+  - [ ] SSH鍵の準備と権限設定
+  - [ ] `config/servers.yaml` の設定
+  - [ ] リモート機能環境変数設定
+  - [ ] SSH接続テスト完了
 - [ ] セキュリティ設定（ファイアウォール、SSL）
 - [ ] システムサービス設定
 - [ ] 監視・アラート設定

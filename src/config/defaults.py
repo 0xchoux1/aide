@@ -69,6 +69,25 @@ DEFAULT_CONFIG = {
         "max_retrieval_items": 10,
         "update_interval_hours": 24,
         "auto_learning": True
+    },
+    
+    "remote_operations": {
+        "enabled": True,
+        "max_connections": 10,
+        "connection_timeout": 30,
+        "idle_timeout": 300,
+        "retry_attempts": 3,
+        "retry_delay": 2,
+        "tool_timeout": 60,
+        "safe_mode": True,
+        "max_retries": 3,
+        "auto_collect_basic_info": True,
+        "auto_analyze_logs": True,
+        "max_concurrent_servers": 5,
+        "servers_config_path": "config/servers.yaml",
+        "agent_name": "aide_remote_agent",
+        "agent_role": "リモートシステム管理者",
+        "agent_goal": "リモートサーバーの調査と問題解決"
     }
 }
 
@@ -323,6 +342,14 @@ class ConfigKeys:
     SECURITY_SANDBOX_ENABLED = "security.execution_safety.sandbox_enabled"
     SECURITY_ENCRYPT_DATA = "security.data_protection.encrypt_sensitive_data"
     SECURITY_AUDIT_ENABLED = "security.audit.log_all_actions"
+    
+    # リモート操作
+    REMOTE_ENABLED = "remote_operations.enabled"
+    REMOTE_MAX_CONNECTIONS = "remote_operations.max_connections"
+    REMOTE_CONNECTION_TIMEOUT = "remote_operations.connection_timeout"
+    REMOTE_SAFE_MODE = "remote_operations.safe_mode"
+    REMOTE_MAX_CONCURRENT_SERVERS = "remote_operations.max_concurrent_servers"
+    REMOTE_SERVERS_CONFIG = "remote_operations.servers_config_path"
 
 
 # バリデーションルール
@@ -358,6 +385,21 @@ VALIDATION_RULES = {
         "max": 100
     },
     "improvement_engine.max_opportunities_per_cycle": {
+        "type": int,
+        "min": 1,
+        "max": 50
+    },
+    "remote_operations.max_connections": {
+        "type": int,
+        "min": 1,
+        "max": 100
+    },
+    "remote_operations.connection_timeout": {
+        "type": int,
+        "min": 5,
+        "max": 300
+    },
+    "remote_operations.max_concurrent_servers": {
         "type": int,
         "min": 1,
         "max": 50

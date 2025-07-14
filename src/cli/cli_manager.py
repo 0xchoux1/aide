@@ -30,6 +30,7 @@ class CommandType(Enum):
     IMPROVEMENT = "improvement"
     CONFIG = "config"
     INTERACTIVE = "interactive"
+    REMOTE = "remote"
 
 
 @dataclass
@@ -373,7 +374,8 @@ def run_cli(argv: Optional[List[str]] = None) -> int:
         ImprovementCommand, 
         ConfigCommand,
         SystemCommand,
-        InteractiveCommand
+        InteractiveCommand,
+        RemoteCommand
     )
     
     cli_manager.register_command(DiagnosticsCommand())
@@ -381,5 +383,12 @@ def run_cli(argv: Optional[List[str]] = None) -> int:
     cli_manager.register_command(ConfigCommand())
     cli_manager.register_command(SystemCommand())
     cli_manager.register_command(InteractiveCommand())
+    
+    # リモートコマンドは可用性を確認してから登録
+    try:
+        cli_manager.register_command(RemoteCommand())
+    except ImportError:
+        # リモート機能が利用できない場合はスキップ
+        pass
     
     return cli_manager.run(argv)
