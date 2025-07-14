@@ -11,19 +11,21 @@ from .llm_interface import LLMInterface, LLMResponse
 class ClaudeCodeClient(LLMInterface):
     """Claude CodeをLLMバックエンドとして利用するクライアント"""
     
-    def __init__(self, claude_command: str = "claude", 
-                 timeout: int = 120,  # デフォルトタイムアウトを120秒に延長
+    def __init__(self, claude_command: str = None, 
+                 timeout: int = None,
                  working_dir: Optional[str] = None,
-                 max_retries: int = 3,  # リトライ回数追加
-                 retry_delay: float = 2.0,  # リトライ間隔追加
+                 max_retries: int = None,
+                 retry_delay: float = None,
                  **kwargs):
         super().__init__(model_name="claude-code", **kwargs)
-        self.claude_command = claude_command
-        self.timeout = timeout
+        
+        # 環境変数から設定を読み込み（引数で上書き可能）
+        self.claude_command = claude_command or os.getenv('AIDE_CLAUDE_COMMAND', 'claude')
+        self.timeout = timeout or int(os.getenv('AIDE_CLAUDE_TIMEOUT', '120'))
         self.working_dir = working_dir or os.getcwd()
         self.session_count = 0
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
+        self.max_retries = max_retries or int(os.getenv('AIDE_CLAUDE_MAX_RETRIES', '3'))
+        self.retry_delay = retry_delay or float(os.getenv('AIDE_CLAUDE_RETRY_DELAY', '2.0'))
         self.consecutive_failures = 0  # 連続失敗回数
         self.last_successful_call = time.time()
         
